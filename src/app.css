@@ -1,6 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&family=Nunito:wght@400;600;700;800&display=swap');
 
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 :root {
   --sky-top: #1a0533;
@@ -16,36 +22,64 @@
   --glass-border: rgba(255, 255, 255, 0.15);
 }
 
-html, body {
-  width: 100%; height: 100%; overflow: hidden;
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   font-family: 'Nunito', sans-serif;
 }
 
 body {
-  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-low) 70%, #6a3fa0 100%);
+  background: linear-gradient(
+    180deg,
+    var(--sky-top) 0%,
+    var(--sky-mid) 40%,
+    var(--sky-low) 70%,
+    #6a3fa0 100%
+  );
   color: var(--txt);
 }
 
 /* ── Shared Button Styles ── */
 .btn {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 11px 24px;
-  font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 600;
-  border: none; border-radius: 14px; cursor: pointer;
-  transition: all 0.2s; letter-spacing: 1px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
 }
-.btn:hover { transform: translateY(-2px); }
-.btn:active { transform: translateY(0); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .btn-primary {
   background: linear-gradient(135deg, var(--cyan), #7c4dff);
-  color: #fff; box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3);
 }
-.btn-primary:hover { box-shadow: 0 6px 30px rgba(0, 229, 255, 0.5); }
+.btn-primary:hover {
+  box-shadow: 0 6px 30px rgba(0, 229, 255, 0.5);
+}
 
 .btn-ghost {
-  background: var(--glass); color: var(--txt);
+  background: var(--glass);
+  color: var(--txt);
   border: 1px solid var(--glass-border);
 }
 
@@ -54,4 +88,8 @@ body {
   color: #fff;
 }
 
-.btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 10px; }
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 12px;
+  border-radius: 10px;
+}

@@ -1,9 +1,11 @@
+import type { WordEntry } from '../types';
+
 /**
  * Word pools organized by level (1-5).
  * Each word has: w (word), i (icon), d (definition).
  * Level determines word length complexity.
  */
-export const WORDS = {
+export const WORDS: Record<number, WordEntry[]> = {
   1: [
     { w: 'comet', i: '☄️', d: 'A bright object in space with a glowing tail of ice and dust.' },
     { w: 'orbit', i: '🪐', d: 'The curved path an object takes around a star or planet.' },
@@ -118,11 +120,39 @@ export const WORDS = {
 
 /** Level title pools */
 export const LEVEL_NAMES = [
-  ['Starlight Sprout', 'Moonbeam Rookie', 'Cosmic Seedling', 'Sky Pup', 'Star Cadet', 'Twinkle Scout'],
-  ['Lunar Explorer', 'Orbit Ranger', 'Night Navigator', 'Moon Hopper', 'Crater Walker', 'Star Gazer'],
+  [
+    'Starlight Sprout',
+    'Moonbeam Rookie',
+    'Cosmic Seedling',
+    'Sky Pup',
+    'Star Cadet',
+    'Twinkle Scout',
+  ],
+  [
+    'Lunar Explorer',
+    'Orbit Ranger',
+    'Night Navigator',
+    'Moon Hopper',
+    'Crater Walker',
+    'Star Gazer',
+  ],
   ['Solar Voyager', 'Sun Chaser', 'Blaze Runner', 'Nova Surfer', 'Comet Rider', 'Flame Seeker'],
-  ['Nebula Navigator', 'Star Pilot', 'Galaxy Drifter', 'Astro Captain', 'Warp Commander', 'Light Bender'],
-  ['Cosmic Champion', 'Galaxy Master', 'Universe Hero', 'Supernova Legend', 'Sky Titan', 'Celestial King'],
+  [
+    'Nebula Navigator',
+    'Star Pilot',
+    'Galaxy Drifter',
+    'Astro Captain',
+    'Warp Commander',
+    'Light Bender',
+  ],
+  [
+    'Cosmic Champion',
+    'Galaxy Master',
+    'Universe Hero',
+    'Supernova Legend',
+    'Sky Titan',
+    'Celestial King',
+  ],
 ];
 
 /** Level badge emoji pools */

@@ -1,8 +1,24 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
 
-  let stars = $state([]);
-  let clouds = $state([]);
+  interface Star {
+    id: number;
+    left: number;
+    top: number;
+    dur: number;
+    delay: number;
+    size: number;
+  }
+  interface Cloud {
+    id: number;
+    width: number;
+    height: number;
+    top: number;
+    dur: number;
+    delay: number;
+  }
+  let stars = $state<Star[]>([]);
+  let clouds = $state<Cloud[]>([]);
 
   onMount(() => {
     stars = Array.from({ length: 80 }, (_, i) => ({
@@ -52,22 +68,47 @@
 </div>
 
 <style>
-  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
   .star {
-    position: absolute; background: #fff; border-radius: 50%;
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
     animation: twinkle var(--dur) ease-in-out infinite alternate;
   }
-  @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+  @keyframes twinkle {
+    0% {
+      opacity: 0.2;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
 
-  .cloud-layer { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+  .cloud-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
   .cloud {
     position: absolute;
     background: radial-gradient(ellipse, rgba(200, 180, 255, 0.12) 0%, transparent 70%);
-    border-radius: 50%; filter: blur(30px);
+    border-radius: 50%;
+    filter: blur(30px);
     animation: drift linear infinite;
   }
   @keyframes drift {
-    0% { transform: translateX(-200px); }
-    100% { transform: translateX(calc(100vw + 200px)); }
+    0% {
+      transform: translateX(-200px);
+    }
+    100% {
+      transform: translateX(calc(100vw + 200px));
+    }
   }
 </style>

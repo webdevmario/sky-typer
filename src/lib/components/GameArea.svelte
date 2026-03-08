@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
-  import { game } from '../stores/game.svelte.js';
+  import { game } from '../stores/game.svelte';
   import FallingWord from './FallingWord.svelte';
 
-  let gameAreaEl = $state(null);
-  let inputEl = $state(null);
+  let gameAreaEl = $state<HTMLDivElement | null>(null);
+  let inputEl = $state<HTMLInputElement | null>(null);
 
   // Focus management
   onMount(() => {
@@ -14,7 +14,7 @@
       }
     }, 300);
 
-    function handleGlobalKeydown(e) {
+    function handleGlobalKeydown(_e: KeyboardEvent) {
       if (game.running && inputEl && document.activeElement !== inputEl) {
         inputEl.focus();
       }
@@ -38,8 +38,12 @@
     };
   });
 
-  function handleKeydown(e) { game.handleKeydown(e); }
-  function handleInput(e) { game.handleInput(e.target.value); }
+  function handleKeydown(e: KeyboardEvent) {
+    game.handleKeydown(e);
+  }
+  function handleInput(e: Event) {
+    game.handleInput((e.target as HTMLInputElement).value);
+  }
 
   let isGameScreen = $derived(game.screen === 'game');
 </script>
@@ -70,35 +74,67 @@
 
 <style>
   .game-area {
-    position: fixed; top: 64px; left: 0; right: 0; bottom: 80px;
-    z-index: 10; overflow: hidden;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 80px;
+    z-index: 10;
+    overflow: hidden;
   }
 
   .input-area {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 80px; z-index: 100;
-    display: none; align-items: center; justify-content: center; padding: 0 24px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
     background: linear-gradient(0deg, rgba(10, 0, 30, 0.9), rgba(10, 0, 30, 0.5));
-    border-top: 1px solid var(--glass-border); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
   }
-  .input-area.visible { display: flex; }
+  .input-area.visible {
+    display: flex;
+  }
 
   .typing-input {
-    width: 100%; max-width: 500px; padding: 12px 24px;
-    font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600;
-    text-align: center; letter-spacing: 3px;
-    background: rgba(255, 255, 255, 0.06); border: 2px solid var(--glass-border);
-    border-radius: 16px; color: #fff; outline: none; transition: all 0.2s;
+    width: 100%;
+    max-width: 500px;
+    padding: 12px 24px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px solid var(--glass-border);
+    border-radius: 16px;
+    color: #fff;
+    outline: none;
+    transition: all 0.2s;
   }
   .typing-input:focus {
-    border-color: var(--cyan); background: rgba(255, 255, 255, 0.1);
+    border-color: var(--cyan);
+    background: rgba(255, 255, 255, 0.1);
     box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
   }
-  .typing-input::placeholder { color: rgba(255, 255, 255, 0.25); letter-spacing: 2px; }
+  .typing-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+    letter-spacing: 2px;
+  }
   .typing-input.error {
-    border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+    border-color: #ff4444;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
   }
 
   @media (max-width: 600px) {
-    .typing-input { font-size: 18px; }
+    .typing-input {
+      font-size: 18px;
+    }
   }
 </style>

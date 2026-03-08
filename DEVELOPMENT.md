@@ -38,11 +38,11 @@ Vite will print a local URL (usually `http://localhost:5173`). Open it in your b
 
 ## Available Commands
 
-| Command            | What it does                                                     |
-|--------------------|------------------------------------------------------------------|
-| `npm run dev`      | Starts Vite dev server with hot module replacement               |
-| `npm run build`    | Compiles everything into `dist/` for production                  |
-| `npm run preview`  | Serves the `dist/` build locally to test before deploying        |
+| Command           | What it does                                              |
+| ----------------- | --------------------------------------------------------- |
+| `npm run dev`     | Starts Vite dev server with hot module replacement        |
+| `npm run build`   | Compiles everything into `dist/` for production           |
+| `npm run preview` | Serves the `dist/` build locally to test before deploying |
 
 After `npm run build`, the `dist/` folder contains static HTML/CSS/JS you can deploy anywhere (Netlify, Vercel, GitHub Pages, any static host). The `vite.config.js` has `base: './'` so the build even works opened directly from the filesystem.
 
@@ -69,14 +69,16 @@ SvelteKit would add unnecessary complexity here — a router, server hooks, and 
 ### Components
 
 React:
+
 ```jsx
 export default function Counter({ initial = 0 }) {
   const [count, setCount] = useState(initial);
-  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+  return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
 }
 ```
 
 Svelte:
+
 ```svelte
 <script>
   let { initial = 0 } = $props();
@@ -87,6 +89,7 @@ Svelte:
 ```
 
 Key differences:
+
 - **No JSX** — Svelte uses HTML with `{expressions}` and directives
 - **`$state()`** replaces `useState()` — but you mutate directly, no setter function
 - **`$props()`** replaces function params — destructure to get props
@@ -102,10 +105,10 @@ React makes you explicitly declare dependencies. Svelte tracks them automaticall
 <script>
   let width = $state(10);
   let height = $state(20);
-  let area = $derived(width * height);  // auto-updates when width or height changes
+  let area = $derived(width * height); // auto-updates when width or height changes
 
   $effect(() => {
-    console.log('Area changed to', area);  // auto-runs when area changes
+    console.log('Area changed to', area); // auto-runs when area changes
   });
 </script>
 ```
@@ -164,20 +167,20 @@ Components import `game` and use it:
 
 ### Component Responsibilities
 
-| Component           | Role                                                          |
-|----------------------|---------------------------------------------------------------|
-| `App.svelte`         | Composes all screens, nothing else                            |
-| `Starfield.svelte`   | Decorative background, self-contained                        |
-| `StartScreen.svelte` | Menu, settings, high scores, custom words link                |
-| `GameHUD.svelte`     | Top bar during gameplay (score, lives, timer)                |
-| `GameArea.svelte`    | The play field, renders `FallingWord` instances, manages input|
-| `FallingWord.svelte` | One falling word — animates, detects when it exits the screen|
-| `GradeDisplay.svelte`| Reusable grade badge (used in 3 different screens)           |
-| `LevelTransition`    | "LEVEL 2" splash before each level starts                    |
-| `LevelUpScreen`      | Results after completing a level                              |
-| `GameOverScreen`     | Shown when you run out of lives                               |
-| `WinScreen`          | Shown after beating all 5 levels                              |
-| `CustomWordsScreen`  | Add/remove custom words                                       |
+| Component             | Role                                                           |
+| --------------------- | -------------------------------------------------------------- |
+| `App.svelte`          | Composes all screens, nothing else                             |
+| `Starfield.svelte`    | Decorative background, self-contained                          |
+| `StartScreen.svelte`  | Menu, settings, high scores, custom words link                 |
+| `GameHUD.svelte`      | Top bar during gameplay (score, lives, timer)                  |
+| `GameArea.svelte`     | The play field, renders `FallingWord` instances, manages input |
+| `FallingWord.svelte`  | One falling word — animates, detects when it exits the screen  |
+| `GradeDisplay.svelte` | Reusable grade badge (used in 3 different screens)             |
+| `LevelTransition`     | "LEVEL 2" splash before each level starts                      |
+| `LevelUpScreen`       | Results after completing a level                               |
+| `GameOverScreen`      | Shown when you run out of lives                                |
+| `WinScreen`           | Shown after beating all 5 levels                               |
+| `CustomWordsScreen`   | Add/remove custom words                                        |
 
 ### Utilities (`src/lib/utils/helpers.js`)
 

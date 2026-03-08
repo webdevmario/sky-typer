@@ -1,11 +1,30 @@
-import { WORDS, LEVEL_NAMES, LEVEL_BADGES } from '../data/words.js';
-import { DIFFICULTY } from '../data/difficulty.js';
+import { WORDS, LEVEL_NAMES, LEVEL_BADGES } from '../data/words';
+import { DIFFICULTY } from '../data/difficulty';
+import type {
+  FallingObject,
+  CompletedWord,
+  Grade,
+  WordEntry,
+  LevelUpData,
+  GameOverData,
+  WinData,
+} from '../types';
 import {
-  shuffle, pickRandom, calcPoints, calcSpeedBonus,
-  calcGrade, calcOverallGrade, sndType, sndWord, sndMiss, sndErr,
-  sndGameOver, sndLevelUp, getCustomWords,
+  shuffle,
+  pickRandom,
+  calcPoints,
+  calcSpeedBonus,
+  calcGrade,
+  calcOverallGrade,
+  sndType,
+  sndWord,
+  sndMiss,
+  sndErr,
+  sndGameOver,
+  sndLevelUp,
+  getCustomWords,
   saveHighScore,
-} from '../utils/helpers.js';
+} from '../utils/helpers';
 
 function createGameStore() {
   // ── Config ──
@@ -14,7 +33,7 @@ function createGameStore() {
   let timePerLevel = $state(30);
 
   // ── Screen state ──
-  let screen = $state('start'); // start | game | levelUp | gameOver | win | customWords
+  let screen = $state('start');
 
   // ── Game state ──
   let score = $state(0);
@@ -31,53 +50,58 @@ function createGameStore() {
   let levelSpeedBonus = $state(0);
   let totalSpeedBonus = $state(0);
   let totalTypos = $state(0);
-  let levelGrades = $state([]);
-  let completedWords = $state([]);
+  let levelGrades = $state<Grade[]>([]);
+  let completedWords = $state<CompletedWord[]>([]);
 
   // ── Falling objects ──
-  let fallingObjects = $state([]);
-  let wordQueue = $state([]);
-  let currentTarget = $state(null);
+  let fallingObjects = $state<FallingObject[]>([]);
+  let wordQueue = $state<WordEntry[]>([]);
+  let currentTarget = $state<FallingObject | null>(null);
   let typingStart = $state(0);
   let inputValue = $state('');
   let inputError = $state(false);
 
   // ── Level meta ──
-  let levelNames = $state([]);
-  let levelBadges = $state([]);
+  let levelNames = $state<string[]>([]);
+  let levelBadges = $state<string[]>([]);
 
   // ── Level-up screen data ──
-  let levelUpData = $state(null);
-  let gameOverData = $state(null);
-  let winData = $state(null);
+  let levelUpData = $state<LevelUpData | null>(null);
+  let gameOverData = $state<GameOverData | null>(null);
+  let winData = $state<WinData | null>(null);
 
   // ── Internals ──
-  let spawnTimer = null;
-  let gameTimer = null;
+  let spawnTimer: ReturnType<typeof setInterval> | null = null;
+  let gameTimer: ReturnType<typeof setInterval> | null = null;
   let objectId = 0;
-  let boundCheckRef = null;
 
   // ── Derived ──
-  let livesRemaining = $derived(maxLives - lives);
-  let df = $derived(DIFFICULTY[difficulty]);
-  let currentLevelName = $derived(levelNames[level - 1] || '');
-  let currentLevelBadge = $derived(levelBadges[level - 1] || '');
+  const livesRemaining = $derived(maxLives - lives);
+  const df = $derived(DIFFICULTY[difficulty]);
+  const currentLevelName = $derived(levelNames[level - 1] || '');
+  const currentLevelBadge = $derived(levelBadges[level - 1] || '');
 
-  function randomMeta() {
-    levelNames = LEVEL_NAMES.map(p => pickRandom(p));
-    levelBadges = LEVEL_BADGES.map(p => pickRandom(p));
+  function randomMeta(): void {
+    levelNames = LEVEL_NAMES.map((p) => pickRandom(p));
+    levelBadges = LEVEL_BADGES.map((p) => pickRandom(p));
   }
 
-  function clearIntervals() {
-    if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
-    if (gameTimer) { clearInterval(gameTimer); gameTimer = null; }
+  function clearIntervals(): void {
+    if (spawnTimer) {
+      clearInterval(spawnTimer);
+      spawnTimer = null;
+    }
+    if (gameTimer) {
+      clearInterval(gameTimer);
+      gameTimer = null;
+    }
   }
 
-  function removeObject(obj) {
-    fallingObjects = fallingObjects.filter(o => o.id !== obj.id);
+  function removeObject(obj: FallingObject): void {
+    fallingObjects = fallingObjects.filter((o) => o.id !== obj.id);
   }
 
-  function autoTarget() {
+  function autoTarget(): void {
     if (fallingObjects.length > 0) {
       setTarget(fallingObjects[0]);
     } else {
@@ -85,13 +109,13 @@ function createGameStore() {
     }
   }
 
-  function setTarget(obj) {
+  function setTarget(obj: FallingObject): void {
     currentTarget = obj;
     inputValue = '';
     typingStart = 0;
   }
 
-  function checkLevelComplete() {
+  function checkLevelComplete(): void {
     if (running && fallingObjects.length === 0 && (wordQueue.length === 0 || timeLeft <= 0)) {
       levelDone();
     }
@@ -99,12 +123,20 @@ function createGameStore() {
 
   // ── Public API ──
 
-  function setDifficulty(d) { difficulty = d; }
-  function setTimePerLevel(t) { timePerLevel = Math.max(15, Math.min(120, t)); }
-  function setPlayerName(n) { playerName = n; }
-  function setInputValue(v) { inputValue = v; }
+  function setDifficulty(d: string): void {
+    difficulty = d;
+  }
+  function setTimePerLevel(t: number): void {
+    timePerLevel = Math.max(15, Math.min(120, t));
+  }
+  function setPlayerName(n: string): void {
+    playerName = n;
+  }
+  function setInputValue(v: string): void {
+    inputValue = v;
+  }
 
-  function startGame() {
+  function startGame(): void {
     playerName = playerName.trim().toUpperCase() || 'PLAYER';
     score = 0;
     level = 0;
@@ -119,7 +151,7 @@ function createGameStore() {
     startLevel(1);
   }
 
-  function restart() {
+  function restart(): void {
     clearAll();
     score = 0;
     level = 0;
@@ -134,12 +166,12 @@ function createGameStore() {
     startLevel(1);
   }
 
-  function goHome() {
+  function goHome(): void {
     clearAll();
     screen = 'start';
   }
 
-  function clearAll() {
+  function clearAll(): void {
     clearIntervals();
     fallingObjects = [];
     wordQueue = [];
@@ -149,7 +181,7 @@ function createGameStore() {
     typingStart = 0;
   }
 
-  function startLevel(lv) {
+  function startLevel(lv: number): void {
     clearAll();
     level = lv;
     timeLeft = timePerLevel;
@@ -166,7 +198,6 @@ function createGameStore() {
     shuffle(pool);
     wordQueue = pool.slice(0, df.wc);
 
-    // Show level transition, then begin
     screen = 'levelTransition';
     setTimeout(() => {
       screen = 'game';
@@ -176,15 +207,15 @@ function createGameStore() {
     }, 1800);
   }
 
-  function getWordsForLevel(lv) {
+  function getWordsForLevel(lv: number): WordEntry[] {
     const base = [...WORDS[lv]];
     const custom = getCustomWords()
-      .filter(x => x.l === lv)
-      .map(x => ({ w: x.w, i: '📝', d: x.d }));
+      .filter((x) => x.l === lv)
+      .map((x) => ({ w: x.w, i: '📝', d: x.d }));
     return base.concat(custom);
   }
 
-  function tick() {
+  function tick(): void {
     if (!running) return;
     timeLeft--;
     if (timeLeft <= 0) {
@@ -193,11 +224,10 @@ function createGameStore() {
       if (fallingObjects.length === 0) {
         levelDone();
       }
-      // else: let remaining words play out naturally
     }
   }
 
-  function spawn() {
+  function spawn(): void {
     if (!running || timeLeft <= 0) return;
     if (wordQueue.length === 0) {
       if (fallingObjects.length === 0) levelDone();
@@ -209,18 +239,23 @@ function createGameStore() {
     const fallDuration = df.sp[level - 1];
     const leftPos = 8 + Math.random() * 74;
 
-    const obj = {
-      id, word: wd.w, icon: wd.i, def: wd.d,
-      typed: 0, fallDuration, leftPos,
+    const obj: FallingObject = {
+      id,
+      word: wd.w,
+      icon: wd.i,
+      def: wd.d,
+      typed: 0,
+      fallDuration,
+      leftPos,
       active: false,
     };
     fallingObjects = [...fallingObjects, obj];
     if (!currentTarget) setTarget(obj);
   }
 
-  function wordMissed(objId) {
+  function wordMissed(objId: number): void {
     if (!running) return;
-    const obj = fallingObjects.find(o => o.id === objId);
+    const obj = fallingObjects.find((o) => o.id === objId);
     if (!obj) return;
 
     sndMiss();
@@ -239,30 +274,46 @@ function createGameStore() {
     checkLevelComplete();
   }
 
-  function handleKeydown(e) {
+  function handleKeydown(e: KeyboardEvent): void {
     if (!running) return;
 
-    if (e.key === 'Tab' || e.key === 'Escape') { e.preventDefault(); return; }
-    if (e.repeat) { e.preventDefault(); return; }
+    if (e.key === 'Tab' || e.key === 'Escape') {
+      e.preventDefault();
+      return;
+    }
+    if (e.repeat) {
+      e.preventDefault();
+      return;
+    }
     if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
     if (e.key.length !== 1) return;
 
     const nextVal = (inputValue + e.key).toLowerCase();
 
     if (!currentTarget) {
-      let found = fallingObjects.some(o => o.word.startsWith(nextVal));
-      if (!found) { e.preventDefault(); rejectKey(); return; }
+      const found = fallingObjects.some((o) => o.word.startsWith(nextVal));
+      if (!found) {
+        e.preventDefault();
+        rejectKey();
+        return;
+      }
     } else {
       if (currentTarget.word.startsWith(nextVal)) {
         // good
       } else {
-        let found = fallingObjects.some(o => o.id !== currentTarget.id && o.word.startsWith(nextVal));
-        if (!found) { e.preventDefault(); rejectKey(); return; }
+        const found = fallingObjects.some(
+          (o) => o.id !== currentTarget!.id && o.word.startsWith(nextVal),
+        );
+        if (!found) {
+          e.preventDefault();
+          rejectKey();
+          return;
+        }
       }
     }
   }
 
-  function handleInput(value) {
+  function handleInput(value: string): void {
     if (!running) return;
     sndType();
     const v = value.toLowerCase();
@@ -270,7 +321,7 @@ function createGameStore() {
     if (v.length === 1 && typingStart === 0) typingStart = performance.now();
 
     if (!currentTarget) {
-      const match = fallingObjects.find(o => o.word.startsWith(v));
+      const match = fallingObjects.find((o) => o.word.startsWith(v));
       if (match) switchTarget(match, v);
     }
     if (currentTarget) {
@@ -278,37 +329,40 @@ function createGameStore() {
         updateTypedProgress(currentTarget, v.length);
         if (v === currentTarget.word) wordCompleted(currentTarget);
       } else {
-        const match = fallingObjects.find(o => o.id !== currentTarget.id && o.word.startsWith(v));
+        const match = fallingObjects.find(
+          (o) => o.id !== currentTarget!.id && o.word.startsWith(v),
+        );
         if (match) switchTarget(match, v);
       }
     }
   }
 
-  function switchTarget(obj, v) {
+  function switchTarget(obj: FallingObject, v: string): void {
     currentTarget = obj;
     updateTypedProgress(obj, v.length);
     typingStart = performance.now();
   }
 
-  function updateTypedProgress(obj, count) {
-    fallingObjects = fallingObjects.map(o =>
-      o.id === obj.id ? { ...o, typed: count, active: true } : { ...o, active: o.id === obj.id }
+  function updateTypedProgress(obj: FallingObject, count: number): void {
+    fallingObjects = fallingObjects.map((o) =>
+      o.id === obj.id ? { ...o, typed: count, active: true } : { ...o, active: o.id === obj.id },
     );
-    // Sync currentTarget
     if (currentTarget && currentTarget.id === obj.id) {
       currentTarget = { ...currentTarget, typed: count, active: true };
     }
   }
 
-  function rejectKey() {
+  function rejectKey(): void {
     sndErr();
     levelTypos++;
     totalTypos++;
     inputError = true;
-    setTimeout(() => { inputError = false; }, 200);
+    setTimeout(() => {
+      inputError = false;
+    }, 200);
   }
 
-  function wordCompleted(obj) {
+  function wordCompleted(obj: FallingObject): { pts: number; sb: number } {
     sndWord();
     const pts = calcPoints(obj.word, level);
     const elapsed = typingStart > 0 ? performance.now() - typingStart : 5000;
@@ -326,18 +380,24 @@ function createGameStore() {
     autoTarget();
     checkLevelComplete();
 
-    // Return VFX data for the component to use
     return { pts, sb };
   }
 
-  function levelDone() {
+  function levelDone(): void {
     running = false;
     clearIntervals();
     sndLevelUp();
 
     const wordsSpawned = levelWordsDone + levelMisses;
     const avgSpd = levelWordsDone > 0 ? levelSpeedBonus / levelWordsDone : 0;
-    const grade = calcGrade(levelWordsDone, wordsSpawned, levelMisses, maxLives, avgSpd, levelTypos);
+    const grade = calcGrade(
+      levelWordsDone,
+      wordsSpawned,
+      levelMisses,
+      maxLives,
+      avgSpd,
+      levelTypos,
+    );
     levelGrades = [...levelGrades, grade];
 
     levelUpData = {
@@ -356,11 +416,11 @@ function createGameStore() {
     screen = 'levelUp';
   }
 
-  function nextLevel() {
+  function nextLevel(): void {
     startLevel(level + 1);
   }
 
-  function showWinScreen() {
+  function showWinScreen(): void {
     const overall = calcOverallGrade(levelGrades);
     const breakdown = levelGrades.map((g, i) => `L${i + 1}: ${g.letter}`).join('  ');
 
@@ -376,7 +436,7 @@ function createGameStore() {
     screen = 'win';
   }
 
-  function gameOver(reason) {
+  function gameOver(reason: string): void {
     running = false;
     clearIntervals();
     sndGameOver();
@@ -384,7 +444,14 @@ function createGameStore() {
 
     const wordsSpawned = completedWords.length + lives;
     const avgSpd = completedWords.length > 0 ? totalSpeedBonus / completedWords.length : 0;
-    const grade = calcGrade(completedWords.length, wordsSpawned, lives, maxLives, avgSpd, totalTypos);
+    const grade = calcGrade(
+      completedWords.length,
+      wordsSpawned,
+      lives,
+      maxLives,
+      avgSpd,
+      totalTypos,
+    );
 
     gameOverData = {
       reason,
@@ -392,42 +459,85 @@ function createGameStore() {
       totalScore: score,
       levelReached: level,
       grade,
-      message: reason === 'miss'
-        ? `Too many words escaped! (${lives}/${maxLives})`
-        : 'Time ran out!',
+      message:
+        reason === 'miss' ? `Too many words escaped! (${lives}/${maxLives})` : 'Time ran out!',
     };
     saveHighScore(playerName, score, grade.letter + ' — ' + levelNames[Math.min(level - 1, 4)]);
     screen = 'gameOver';
   }
 
-  function openCustomWords() { screen = 'customWords'; }
-  function closeCustomWords() { screen = 'start'; }
+  function openCustomWords(): void {
+    screen = 'customWords';
+  }
+  function closeCustomWords(): void {
+    screen = 'start';
+  }
 
   return {
-    // Getters (reactive via $state)
-    get playerName() { return playerName; },
-    get difficulty() { return difficulty; },
-    get timePerLevel() { return timePerLevel; },
-    get screen() { return screen; },
-    get score() { return score; },
-    get level() { return level; },
-    get timeLeft() { return timeLeft; },
-    get running() { return running; },
-    get livesRemaining() { return livesRemaining; },
-    get maxLives() { return maxLives; },
-    get fallingObjects() { return fallingObjects; },
-    get currentTarget() { return currentTarget; },
-    get inputValue() { return inputValue; },
-    get inputError() { return inputError; },
-    get currentLevelName() { return currentLevelName; },
-    get currentLevelBadge() { return currentLevelBadge; },
-    get levelUpData() { return levelUpData; },
-    get gameOverData() { return gameOverData; },
-    get winData() { return winData; },
-    get completedWords() { return completedWords; },
-    get levelGrades() { return levelGrades; },
+    get playerName() {
+      return playerName;
+    },
+    get difficulty() {
+      return difficulty;
+    },
+    get timePerLevel() {
+      return timePerLevel;
+    },
+    get screen() {
+      return screen;
+    },
+    get score() {
+      return score;
+    },
+    get level() {
+      return level;
+    },
+    get timeLeft() {
+      return timeLeft;
+    },
+    get running() {
+      return running;
+    },
+    get livesRemaining() {
+      return livesRemaining;
+    },
+    get maxLives() {
+      return maxLives;
+    },
+    get fallingObjects() {
+      return fallingObjects;
+    },
+    get currentTarget() {
+      return currentTarget;
+    },
+    get inputValue() {
+      return inputValue;
+    },
+    get inputError() {
+      return inputError;
+    },
+    get currentLevelName() {
+      return currentLevelName;
+    },
+    get currentLevelBadge() {
+      return currentLevelBadge;
+    },
+    get levelUpData() {
+      return levelUpData;
+    },
+    get gameOverData() {
+      return gameOverData;
+    },
+    get winData() {
+      return winData;
+    },
+    get completedWords() {
+      return completedWords;
+    },
+    get levelGrades() {
+      return levelGrades;
+    },
 
-    // Actions
     setDifficulty,
     setTimePerLevel,
     setPlayerName,
