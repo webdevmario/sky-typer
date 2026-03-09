@@ -2,8 +2,19 @@
   import { game } from '../stores/game.svelte';
   import { getHighScores, clearHighScores, escapeHtml } from '../utils/helpers';
 
-  let highScores = $state(getHighScores());
   let nameValue = $state('');
+  let highScores = $state(getHighScores());
+
+  // Refresh scores whenever we return to the start screen
+  $effect(() => {
+    if (game.screen === 'start') {
+      highScores = getHighScores();
+    }
+  });
+
+  let recentPlayers = $derived(
+    [...new Set(highScores.map((h) => h.n))].slice(0, 5),
+  );
 
   function refreshScores() {
     highScores = getHighScores();
@@ -52,6 +63,28 @@
           autofocus
         />
       </div>
+
+      {#if recentPlayers.length > 0}
+      <div class="quick-pick">
+    <div class="label center" style="margin-bottom: 4px; font-size: 10px;">
+      Previous Players
+    </div>
+        <div class="quick-names">
+          {#each recentPlayers as name (name)}
+            <button
+              class="name-chip"
+              class:active={nameValue.toUpperCase() === name}
+              onclick={() => {
+                nameValue = name;
+                game.setPlayerName(name);
+              }}
+            >
+              {name}
+            </button>
+          {/each}
+        </div>
+        </div>
+      {/if}
 
       <div class="field">
         <div class="label">Difficulty</div>
@@ -390,4 +423,34 @@
     justify-content: center;
     margin-top: 10px;
   }
+
+  .quick-names {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.name-chip {
+  padding: 4px 12px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.name-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--txt);
+}
+.name-chip.active {
+  border-color: var(--cyan);
+  background: rgba(0, 229, 255, 0.1);
+  color: var(--cyan);
+}
 </style>
