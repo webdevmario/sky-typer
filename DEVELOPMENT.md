@@ -30,19 +30,37 @@ npm install
 npm run dev
 ```
 
-Vite will print a local URL (usually `http://localhost:5173`). Open it in your browser. Changes to any `.svelte` or `.js` file will hot-reload instantly.
+Vite will print a local URL (usually `http://localhost:5173`). Open it in your browser. Changes to any `.svelte` or `.ts` file will hot-reload instantly.
 
 **Important**: You must run `npm install` before anything else. The project won't work by just opening `index.html` in a browser — it needs the Svelte compiler and Vite bundler from `node_modules`.
 
 ---
 
+## Tech Stack
+
+- **Svelte 5** — Compiler-based UI framework with runes (`$state`, `$derived`)
+- **TypeScript** — Strict mode, shared types in `src/lib/types.ts`
+- **Vite 7** — Dev server and bundler
+- **Prettier** — Auto-formatting with Svelte plugin (`.prettierrc`)
+- **ESLint** — Linting with TypeScript + Svelte parsers (`eslint.config.js`)
+- **svelte-check** — Type checking + a11y validation for `.svelte` files
+- **Web Audio API** — Sound effects (no external audio files)
+- **CSS** — Scoped per-component, global variables in `app.css`
+- **localStorage** — High scores and custom words persistence
+
+---
+
 ## Available Commands
 
-| Command           | What it does                                              |
-| ----------------- | --------------------------------------------------------- |
-| `npm run dev`     | Starts Vite dev server with hot module replacement        |
-| `npm run build`   | Compiles everything into `dist/` for production           |
-| `npm run preview` | Serves the `dist/` build locally to test before deploying |
+| Command            | What it does                                              |
+| ------------------ | --------------------------------------------------------- |
+| `npm run dev`      | Starts Vite dev server with hot module replacement        |
+| `npm run build`    | Compiles everything into `dist/` for production           |
+| `npm run preview`  | Serves the `dist/` build locally to test before deploying |
+| `npm run check`    | Runs svelte-check (type errors + a11y warnings)           |
+| `npm run lint`     | Runs ESLint with auto-fix                                 |
+| `npm run format`   | Runs Prettier on all files                                |
+| `npm run validate` | Runs format:check + lint:check + check in sequence        |
 
 After `npm run build`, the `dist/` folder contains static HTML/CSS/JS you can deploy anywhere (Netlify, Vercel, GitHub Pages, any static host). The `vite.config.js` has `base: './'` so the build even works opened directly from the filesystem.
 
@@ -113,9 +131,9 @@ React makes you explicitly declare dependencies. Svelte tracks them automaticall
 </script>
 ```
 
-### The `.svelte.js` Extension
+### The `.svelte.ts` Extension
 
-Files ending in `.svelte.js` (like `game.svelte.js`) can use runes (`$state`, `$derived`, `$effect`) outside of `.svelte` components. This is how we build reactive stores. The Svelte compiler processes these files specially — a plain `.js` file cannot use runes.
+Files ending in `.svelte.ts` (like `game.svelte.ts`) can use runes (`$state`, `$derived`, `$effect`) outside of `.svelte` components. This is how we build reactive stores. The Svelte compiler processes these files specially — a plain `.ts` file cannot use runes.
 
 ---
 
@@ -124,16 +142,16 @@ Files ending in `.svelte.js` (like `game.svelte.js`) can use runes (`$state`, `$
 ### Data Flow
 
 ```
-game.svelte.js (store)    ← Single source of truth
+game.svelte.ts (store)    ← Single source of truth
        ↕
    Components              ← Read state, call actions
        ↕
-   helpers.js              ← Pure functions (scoring, audio, etc.)
+   helpers.ts              ← Pure functions (scoring, audio, etc.)
 ```
 
 Everything flows through the store. Components never hold game logic — they read `game.score`, `game.fallingObjects`, etc. and call `game.startGame()`, `game.handleInput()`, etc.
 
-### The Game Store (`src/lib/stores/game.svelte.js`)
+### The Game Store (`src/lib/stores/game.svelte.ts`)
 
 This is the heart of the app. It's a function that creates a closure with reactive state:
 
@@ -158,7 +176,7 @@ Components import `game` and use it:
 
 ```svelte
 <script>
-  import { game } from '../stores/game.svelte.js';
+  import { game } from '../stores/game.svelte.ts';
 </script>
 
 <div>{game.score}</div>
@@ -182,7 +200,7 @@ Components import `game` and use it:
 | `WinScreen`           | Shown after beating all 5 levels                               |
 | `CustomWordsScreen`   | Add/remove custom words                                        |
 
-### Utilities (`src/lib/utils/helpers.js`)
+### Utilities (`src/lib/utils/helpers.ts`)
 
 All pure functions — no state, no side effects (except audio). Includes:
 
@@ -195,8 +213,8 @@ All pure functions — no state, no side effects (except audio). Includes:
 
 ### Data (`src/lib/data/`)
 
-- `words.js` — Word pools for levels 1-5, plus level name/badge arrays
-- `difficulty.js` — Fall speed, spawn interval, max misses, word count per difficulty
+- `words.ts` — Word pools for levels 1-5, plus level name/badge arrays
+- `difficulty.ts` — Fall speed, spawn interval, max misses, word count per difficulty
 
 ---
 
@@ -204,7 +222,7 @@ All pure functions — no state, no side effects (except audio). Includes:
 
 ### Add a new word
 
-Open `src/lib/data/words.js` and add to the appropriate level array:
+Open `src/lib/data/words.ts` and add to the appropriate level array:
 
 ```js
 { w: 'phoenix', i: '🔥', d: 'A mythical bird that rises from its own ashes.' },
@@ -214,7 +232,7 @@ Words are auto-assigned to levels by length in the custom words feature, but the
 
 ### Change difficulty settings
 
-Edit `src/lib/data/difficulty.js`:
+Edit `src/lib/data/difficulty.ts`:
 
 ```js
 easy: {
@@ -225,10 +243,20 @@ easy: {
 },
 ```
 
+### Editor Setup (VS Code)
+
+The project includes `.vscode/settings.json` for auto-format on save. When you first open the project, VS Code will suggest three extensions:
+
+- **Svelte for VS Code** — syntax highlighting, intellisense, formatting for `.svelte` files
+- **Prettier** — auto-formats TS, JS, CSS, JSON on save
+- **ESLint** — inline error/warning squiggles
+
+Install all three. After that, saving any file auto-formats it and type errors appear inline.
+
 ### Add a new screen
 
 1. Create `src/lib/components/MyScreen.svelte`
-2. Add a new screen state string in `game.svelte.js` (e.g., `'myScreen'`)
+2. Add a new screen state string in `game.svelte.ts` (e.g., `'myScreen'`)
 3. Add it to `App.svelte`
 4. Control visibility with `game.screen === 'myScreen'`
 
