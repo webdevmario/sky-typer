@@ -3,10 +3,10 @@ import type { DifficultyPreset } from '../types';
 /**
  * Difficulty presets.
  *
- * sp  — fall speed in seconds per level [1..5]
- * si  — spawn interval in ms per level [1..5]
- * ms  — max misses before game over
- * wc  — word count per level
+ * sp -fall speed in seconds per level [1..5]
+ * si -spawn interval in ms per level [1..5]
+ * ms -max misses before game over
+ * wc -word count per level
  */
 export const DIFFICULTY: Record<string, DifficultyPreset> = {
   easy: { sp: [22, 20, 17, 14, 12], si: [4800, 4200, 3600, 3200, 2800], ms: 5, wc: 5 },

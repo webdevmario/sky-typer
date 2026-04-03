@@ -206,6 +206,14 @@ export function clearHighScores(): void {
   localStorage.removeItem(HS_KEY);
 }
 
+export function updateHighScoreName(index: number, newName: string): void {
+  const hs = getHighScores();
+  if (index >= 0 && index < hs.length) {
+    hs[index].n = newName;
+    localStorage.setItem(HS_KEY, JSON.stringify(hs));
+  }
+}
+
 export function getCustomWords(): CustomWord[] {
   try {
     return JSON.parse(localStorage.getItem(CW_KEY) || '[]') as CustomWord[];

@@ -168,6 +168,7 @@ function createGameStore() {
 
   function goHome(): void {
     clearAll();
+    playerName = '';
     screen = 'start';
   }
 
@@ -277,8 +278,13 @@ function createGameStore() {
   function handleKeydown(e: KeyboardEvent): void {
     if (!running) return;
 
-    if (e.key === 'Tab' || e.key === 'Escape') {
+    if (e.key === 'Tab') {
       e.preventDefault();
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      goHome();
       return;
     }
     if (e.repeat) {
@@ -432,7 +438,7 @@ function createGameStore() {
       overallGrade: overall,
       breakdown,
     };
-    saveHighScore(playerName, score, overall.letter + ' — ' + levelNames[4]);
+    saveHighScore(playerName, score, overall.letter + ' - ' + levelNames[4]);
     screen = 'win';
   }
 
@@ -462,7 +468,7 @@ function createGameStore() {
       message:
         reason === 'miss' ? `Too many words escaped! (${lives}/${maxLives})` : 'Time ran out!',
     };
-    saveHighScore(playerName, score, grade.letter + ' — ' + levelNames[Math.min(level - 1, 4)]);
+    saveHighScore(playerName, score, grade.letter + ' - ' + levelNames[Math.min(level - 1, 4)]);
     screen = 'gameOver';
   }
 

@@ -1,14 +1,20 @@
 <script lang="ts">
   import { game } from '../stores/game.svelte';
-  import { getHighScores, clearHighScores, escapeHtml } from '../utils/helpers';
+  import {
+    getHighScores,
+    clearHighScores,
+    updateHighScoreName,
+    escapeHtml,
+  } from '../utils/helpers';
 
   let nameValue = $state('');
   let highScores = $state(getHighScores());
 
-  // Refresh scores whenever we return to the start screen
+  // Refresh scores and sync name whenever we return to the start screen
   $effect(() => {
     if (game.screen === 'start') {
       highScores = getHighScores();
+      nameValue = game.playerName;
     }
   });
 
@@ -36,6 +42,34 @@
     if (e.key === 'Enter' && nameValue.trim().length > 0) game.startGame();
   }
 
+  let editingIndex = $state<number | null>(null);
+  let editName = $state('');
+
+  function formatDate(ts: number): string {
+    const d = new Date(ts);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function startEdit(i: number) {
+    editingIndex = i;
+    editName = highScores[i].n;
+  }
+
+  function saveEdit(i: number) {
+    const trimmed = editName.trim().toUpperCase();
+    if (trimmed.length > 0) {
+      updateHighScoreName(i, trimmed);
+      refreshScores();
+    }
+    editingIndex = null;
+  }
+
+  function handleEditKeydown(e: KeyboardEvent, i: number) {
+    if (e.key === 'Enter') saveEdit(i);
+    if (e.key === 'Escape') editingIndex = null;
+    e.stopPropagation();
+  }
+
   let canStart = $derived(nameValue.trim().length > 0);
 </script>
 
@@ -50,16 +84,30 @@
     <div class="form">
       <div class="field">
         <div class="label">Your Name</div>
-        <input
-          class="input-field"
-          type="text"
-          placeholder="Enter your name..."
-          maxlength="12"
-          value={nameValue}
-          oninput={handleNameInput}
-          onkeydown={handleKeydown}
-          autofocus
-        />
+        <div class="input-wrap">
+          <input
+            class="input-field"
+            type="text"
+            placeholder="Enter your name..."
+            maxlength="12"
+            value={nameValue}
+            oninput={handleNameInput}
+            onkeydown={handleKeydown}
+            autofocus
+          />
+          {#if nameValue.length > 0}
+            <button
+              class="clear-name-btn"
+              onclick={() => {
+                nameValue = '';
+                game.setPlayerName('');
+              }}
+              tabindex="-1"
+            >
+              x
+            </button>
+          {/if}
+        </div>
       </div>
 
       {#if recentPlayers.length > 0}
@@ -131,15 +179,33 @@
     <div class="scores-section">
       <div class="label center">🏆 High Scores</div>
       {#if highScores.length === 0}
-        <div class="no-scores">No scores yet — be the first!</div>
+        <div class="no-scores">No scores yet - be the first!</div>
       {:else}
         <div class="score-list">
           {#each highScores.slice(0, 5) as hs, i (hs.d)}
             <div class="score-row" class:odd={i % 2 === 1}>
               <div class="rank">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</div>
               <div class="score-info">
-                <div class="score-name">{escapeHtml(hs.n)}</div>
+                {#if editingIndex === i}
+                  <input
+                    class="edit-name-input"
+                    type="text"
+                    maxlength="12"
+                    value={editName}
+                    oninput={(e) => (editName = (e.target as HTMLInputElement).value)}
+                    onkeydown={(e) => handleEditKeydown(e, i)}
+                    onblur={() => saveEdit(i)}
+                    autofocus
+                  />
+                {:else}
+                  <div class="score-name-row">
+                    <span class="score-name">{escapeHtml(hs.n)}</span>
+                    <button class="edit-btn" onclick={() => startEdit(i)} tabindex="-1">edit</button
+                    >
+                  </div>
+                {/if}
                 {#if hs.t}<div class="score-meta">{escapeHtml(hs.t)}</div>{/if}
+                <div class="score-date">{formatDate(hs.d)}</div>
               </div>
               <div class="score-val">{hs.s.toLocaleString()}</div>
             </div>
@@ -243,9 +309,39 @@
     text-align: center;
   }
 
+  .input-wrap {
+    position: relative;
+  }
+  .clear-name-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+  }
+  .clear-name-btn:hover {
+    background: rgba(255, 68, 68, 0.25);
+    color: #ff8888;
+  }
+
   .input-field {
     width: 100%;
-    padding: 10px 14px;
+    padding: 10px 38px 10px 14px;
     font-family: 'Fredoka', sans-serif;
     font-size: 16px;
     font-weight: 600;
@@ -399,6 +495,47 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .score-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .edit-btn {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0;
+  }
+  .score-row:hover .edit-btn {
+    opacity: 1;
+  }
+  .edit-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--glass-border);
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .edit-name-input {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--cyan);
+    border-radius: 6px;
+    color: #fff;
+    outline: none;
+    width: 100%;
+    max-width: 120px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
   .score-meta {
     font-family: 'Nunito', sans-serif;
     font-size: 10px;
@@ -406,6 +543,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .score-date {
+    font-family: 'Nunito', sans-serif;
+    font-size: 9px;
+    opacity: 0.3;
   }
   .score-val {
     font-family: 'Fredoka', sans-serif;
