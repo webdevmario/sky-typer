@@ -15,22 +15,28 @@ src/
   App.svelte              # Root - composes all screens
   app.css                 # Global CSS variables and base styles
   lib/
-    stores/game.svelte.ts # Central game state (single store, closure pattern)
-    components/           # All UI components (screens + reusable)
-    data/words.ts         # Word pools per level + level names/badges
-    data/difficulty.ts    # Difficulty presets (fall speed, spawn, misses, word count)
-    utils/helpers.ts      # Pure functions: scoring, grading, audio, localStorage
-    types.ts              # Shared TypeScript interfaces
+    stores/game.svelte.ts      # Game state (falling words mode)
+    stores/training.svelte.ts  # Training mode state (separate store)
+    components/                # Game UI components (screens + reusable)
+    components/training/       # Training mode components
+    data/words.ts              # Word pools per level + level names/badges
+    data/difficulty.ts         # Difficulty presets (fall speed, spawn, misses, word count)
+    data/training-lessons.ts   # Training stages, lessons, word lists, keyboard maps
+    data/training-config.ts    # Training thresholds, badges, WPM labels
+    utils/helpers.ts           # Pure functions: scoring, grading, audio, localStorage
+    types.ts                   # Shared TypeScript interfaces
 ```
 
 ## Key Patterns
 
-- All game state lives in `game.svelte.ts` as a single store using Svelte 5 runes
+- Game and training have separate stores (`game.svelte.ts` and `training.svelte.ts`)
+- Both stores use the same closure pattern with Svelte 5 runes
 - Components read state via getters (`game.score`) and call actions (`game.startGame()`)
 - Reactive files use `.svelte.ts` extension (required for runes outside components)
 - Styles are scoped per component; global vars in `app.css`
 - Audio is procedural via Web Audio API (no audio files)
-- Persistence via localStorage: `skytyper_hs` (high scores), `skytyper_cw` (custom words)
+- Persistence via localStorage: `skytyper_hs` (high scores), `skytyper_cw` (custom words), `skytyper_training` (training progress)
+- Avoid `new Date()` in `.svelte.ts` files (linter requires SvelteDate) - use helpers instead
 
 ## Style Rules
 
@@ -45,3 +51,18 @@ Start Screen -> Level Transition (1.8s) -> Game -> Level Up -> ... -> Win/Game O
 - ESC quits to home from gameplay
 - 5 levels, words get longer each level
 - 3 difficulties: easy/normal/hard
+
+## Training Mode
+
+6 stages: Home Row -> Top Row -> Bottom Row -> Space Bar -> Numbers -> Punctuation
+Each stage has 3-5 lessons with 3 exercises each.
+
+- Separate store (`training.svelte.ts`) from game store
+- Per-key mastery tracking (accuracy + speed)
+- WPM tracking with idle time exclusion (3s threshold)
+- On-screen keyboard with finger-zone color coding
+- 3 keyboard modes: Always / Auto (fades mastered keys) / Hidden
+- Star ratings (0-3) based on accuracy thresholds (70/85/95%)
+- Badge system for achievements
+- Daily practice streak tracking
+- Lessons unlock sequentially; stages unlock when all previous stage lessons completed

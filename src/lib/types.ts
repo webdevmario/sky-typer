@@ -82,3 +82,70 @@ export interface WinData {
   overallGrade: Grade;
   breakdown: string;
 }
+
+// ── Training Mode ──
+
+export interface KeyStat {
+  hits: number;
+  misses: number;
+  totalTimeMs: number;
+}
+
+export interface LessonProgress {
+  completed: boolean;
+  bestAccuracy: number;
+  bestWpm: number;
+  stars: number;
+  attempts: number;
+  recentWpm: number[];
+}
+
+export interface StreakData {
+  current: number;
+  lastPracticeDate: string;
+  longestStreak: number;
+}
+
+export interface TrainingPersistence {
+  keyStats: Record<string, KeyStat>;
+  lessons: Record<string, LessonProgress>;
+  badges: string[];
+  streak: StreakData;
+  settings: {
+    keyboardMode: 'always' | 'hidden';
+  };
+}
+
+export interface TrainingLesson {
+  id: string;
+  title: string;
+  keys: string[];
+  exercises: string[][];
+}
+
+export interface TrainingStage {
+  id: number;
+  title: string;
+  emoji: string;
+  lessons: TrainingLesson[];
+}
+
+export interface LessonCompleteData {
+  stageId: number;
+  lessonId: string;
+  accuracy: number;
+  wpm: number;
+  correctCount: number;
+  errorCount: number;
+  bestStreak: number;
+  stars: number;
+  newBadges: string[];
+  isNewBest: boolean;
+}
+
+export interface BadgeDef {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+}

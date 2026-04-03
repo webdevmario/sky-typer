@@ -75,6 +75,7 @@
 
 <div class="overlay" class:visible={game.screen === 'start'}>
   <div class="card">
+    <button class="back-btn" onclick={() => game.goToLanding()}>← Back</button>
     <div class="emoji-hero">🌠</div>
     <h1 class="title">SKY TYPER</h1>
     <p class="subtitle">
@@ -242,6 +243,7 @@
   }
 
   .card {
+    position: relative;
     text-align: center;
     max-width: 480px;
     width: 92%;
@@ -264,6 +266,26 @@
   }
   .overlay.visible .card {
     transform: scale(1) translateY(0);
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--txt);
   }
 
   .emoji-hero {

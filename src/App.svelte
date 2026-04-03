@@ -8,9 +8,15 @@
   import GameOverScreen from './lib/components/GameOverScreen.svelte';
   import WinScreen from './lib/components/WinScreen.svelte';
   import CustomWordsScreen from './lib/components/CustomWordsScreen.svelte';
+  import LandingScreen from './lib/components/LandingScreen.svelte';
+  import TrainingUserPicker from './lib/components/training/TrainingUserPicker.svelte';
+  import TrainingHome from './lib/components/training/TrainingHome.svelte';
+  import TrainingLesson from './lib/components/training/TrainingLesson.svelte';
+  import TrainingComplete from './lib/components/training/TrainingComplete.svelte';
 </script>
 
 <Starfield />
+<LandingScreen />
 <GameHUD />
 <GameArea />
 <LevelTransition />
@@ -19,3 +25,7 @@
 <GameOverScreen />
 <WinScreen />
 <CustomWordsScreen />
+<TrainingUserPicker />
+<TrainingHome />
+<TrainingLesson />
+<TrainingComplete />

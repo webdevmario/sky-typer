@@ -33,7 +33,7 @@ function createGameStore() {
   let timePerLevel = $state(30);
 
   // ── Screen state ──
-  let screen = $state('start');
+  let screen = $state('landing');
 
   // ── Game state ──
   let score = $state(0);
@@ -170,6 +170,12 @@ function createGameStore() {
     clearAll();
     playerName = '';
     screen = 'start';
+  }
+
+  function goToLanding(): void {
+    clearAll();
+    playerName = '';
+    screen = 'landing';
   }
 
   function clearAll(): void {
@@ -551,6 +557,7 @@ function createGameStore() {
     startGame,
     restart,
     goHome,
+    goToLanding,
     startLevel,
     nextLevel,
     showWinScreen,
